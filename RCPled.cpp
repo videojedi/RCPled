@@ -21,22 +21,59 @@ unsigned long LEDfunc [5][10] = {
 {0,0,0,0,0,0,0,0,0,0}   //Previous Rate 4
 };
 
+
+
 int BL = 44;
 int PL = 13;
 int DL = 12;
 
+
 RCPled::RCPled()
 {
+	this->pressCallback = NULL;
+	this->nextTime =0;
+    
+		this->setLayout(4, 3, (char **)kp2DefaultLayout, (uint8_t *)kp2DefaultStateHolder, \
+				(int *)kp2RowPins, (int *)kp2ColPins, 1);
+
 for (int count=0;count<10;count++) {
     pinMode(pinArrayG[count], OUTPUT);
     digitalWrite(pinArrayG[count],HIGH);
     pinMode(pinArrayR[count], OUTPUT);
     digitalWrite(pinArrayR[count],HIGH);
   }
+
+
+
 pinMode(BL, OUTPUT);
 pinMode(PL, OUTPUT);
 pinMode(DL, OUTPUT);
 }
+
+void RCPled::setLayout(int rowc, int colc, char **l, uint8_t *keyState, \
+		int *rowp, int *colp, uint8_t useInternalPullup) {
+	this->rowc = rowc;
+	this->colc = colc;
+	this->layout = (char *)l;
+	this->keyState = keyState;
+	this->rowp = rowp;
+	this->colp = colp;
+
+	// set row pins as INPUT
+	for(int i=0; i<this->rowc; i++) {
+		pinMode(this->rowp[i], INPUT);
+		if(useInternalPullup)
+			digitalWrite(this->rowp[i], HIGH); // set pullups
+	}
+
+	// set column pins as OUTPUT
+	for(int i=0; i<this->colc; i++) {
+		pinMode(this->colp[i], OUTPUT);
+		digitalWrite(this->colp[i], HIGH); // set high on column pin
+	}
+	this->nextTime = millis()+KP2_SCAN_INTERVAL;
+}
+
 
 void RCPled::LED(int num, int col, int Tcol, int rep, int rate) {
   LEDfunc [0] [num] = col;
@@ -46,8 +83,48 @@ void RCPled::LED(int num, int col, int Tcol, int rep, int rate) {
 
 }
 
+
+
+
 void RCPled::LEDupdate() {
+	char result;
   unsigned long currentMillis = millis();
+
+	if(millis() < this->nextTime)
+		return;
+
+	uint8_t state;
+
+	for(int c=0, stateIdx=0; c<this->colc; c++) {
+		// send LOW on the column, and check for LOW on every row
+		digitalWrite(this->colp[c], LOW);
+
+		for(int r=0; r<this->rowc; r++, stateIdx+=2) {
+			// get state for key[r,c]
+			state = this->getKeyState(stateIdx);
+			// key[r,c] is not pressed
+			if(digitalRead(this->rowp[r])) {
+				if(state == KP2_KEYDOWN) 
+					this->callPressCallback(r, c, KP2_KEYUP);
+				if(state != KP2_KEYUP)
+					this->setKeyState(stateIdx, KP2_KEYUP);
+			}
+			else { // pressed
+				if(state == KP2_KEYUP) 
+					this->setKeyState(stateIdx, KP2_PENDING);
+				else if(state == KP2_PENDING) {
+					this->setKeyState(stateIdx, KP2_KEYDOWN);
+					this->callPressCallback(r, c, KP2_KEYDOWN);
+				}
+			}
+		}
+
+		// set column to HIGH again
+		digitalWrite(this->colp[c], HIGH);
+	}
+
+	this->nextTime = millis()+KP2_SCAN_INTERVAL;
+
   
   for (int i = 0; i < 10; i++) {
 
@@ -81,7 +158,42 @@ void RCPled::LEDupdate() {
     }
     }    
   }
+
+
+
+
+
+
 }
+
+
+void RCPled::setPressCallback(void (*callback)(char keyChar, uint8_t updown)) {
+	this->pressCallback = callback;
+}
+
+
+void RCPled::callPressCallback(int r, int c, uint8_t updown) {
+	// call press callback if exists
+	if(this->pressCallback != NULL) {
+		char keyChar = this->layout[r*this->colc+c];
+		this->pressCallback(keyChar, updown);
+	}
+}
+
+uint8_t RCPled::getKeyState(int stateIdx) {
+	uint8_t sb = this->keyState[stateIdx/8];
+	int pos = stateIdx%8;
+	return (sb>>pos)&0x03;
+}
+
+void RCPled::setKeyState(int stateIdx, uint8_t state) {
+	uint8_t *sb = this->keyState+stateIdx/8;
+	int pos = stateIdx%8;
+	bitWrite(*sb, pos, bitRead(state, 0));
+	bitWrite(*sb, pos+1, bitRead(state, 1));
+}
+
+
 
 void RCPled::SetColour(int i, int col) {
   switch (col)            //switch colour
