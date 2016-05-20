@@ -8,3 +8,7 @@ rcpled.BackLight(0-255 level)
 rcpled.PwrLight(0,1)
 rcpled.DataLight(0,1)
 rcp.led.LEDupdate() writes out changes. Stick this in loop
+
+
+Use the callback function as per the exampleto read which key has been pressed 
+
