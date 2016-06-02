@@ -36,9 +36,72 @@ void loop() {
   
 }
 
-void kpPressCallback(char c, uint8_t state) {
-  Serial.print(c);
-  Serial.print(" ");
-  Serial.print(state == KP2_KEYUP ? "up":"down");
-  Serial.println();
+void kpPressCallback(char key, uint8_t state) {
+  
+if (state) {
+  switch(key)
+  {
+    case '0':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '1':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '2':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '3':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '4':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '5':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '6':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '7':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '8':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+    case '9':
+      Serial.print(key);
+      Serial.print(" ");
+      Serial.print(state == KP2_KEYUP ? "up":"down");
+      Serial.println();
+      break;
+  }
+}
+  
 }
