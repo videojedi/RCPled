@@ -9,7 +9,9 @@ RCPled rcpled;
 
 void setup() {
 
+  rcpled.setPressCallback(kpPressCallback);
 
+Serial.begin(115200);
   
 rcpled.LED(0,2,0,0,500);
 rcpled.LED(1,1,3,0,100);
@@ -23,12 +25,20 @@ rcpled.LED(8,2,0,0,500);
 rcpled.LED(9,3,1,0,1500);
 
 rcpled.BackLight(255);
-rcpled.PwrLight(1);
-rcpled.DataLight(1);
-
+rcpled.PwrLight(0);
+rcpled.DataLight(0);
+Serial.println("RCP - 10 Generic Button Box");
 }
 
 void loop() {
 
   rcpled.LEDupdate();
+  
+}
+
+void kpPressCallback(char c, uint8_t state) {
+  Serial.print(c);
+  Serial.print(" ");
+  Serial.print(state == KP2_KEYUP ? "up":"down");
+  Serial.println();
 }
